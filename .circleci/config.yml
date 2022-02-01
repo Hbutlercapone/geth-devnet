@@ -1,35 +1,26 @@
-version: 2
+# Use the latest 2.1 version of CircleCI pipeline process engine.
+# See: https://circleci.com/docs/2.0/configuration-reference
+version: 2.1
+
+# Define a job to be invoked later in a workflow.
+# See: https://circleci.com/docs/2.0/configuration-reference/#jobs
 jobs:
-  build:
-    filters:
-      tags:
-        only: /^v.*/
-      branches:
-        ignore: /.*/
-    machine: true
+  say-hello:
+    # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
+    # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
+    docker:
+      - image: cimg/base:stable
+    # Add steps to the job
+    # See: https://circleci.com/docs/2.0/configuration-reference/#steps
     steps:
       - checkout
-      # build all docker images for tags
       - run:
-          name: Creating image artifacts
-          command: |
-            docker build --build-arg DEV_CHAIN=false -f Dockerfile -t purta/geth-devnet:${CIRCLE_TAG:-latest} .
-            docker build --build-arg DEV_CHAIN=true -f Dockerfile -t purta/geth-devnet:${CIRCLE_TAG:-latest}-instantseal .
+          name: "Say hello"
+          command: "echo Hello, World!"
 
-  deploy:
-    requires:
-      - build
-    filters:
-      tags:
-        only: /^v.*/
-      branches:
-        ignore: /.*/
-    machine: true
-    steps:
-      # publish all docker images to docker hub
-      - run:
-          name: Publish images
-          command: |
-            docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
-            docker push purta/geth-devnet:${CIRCLE_TAG:-latest}
-            docker push purta/geth-devnet:${CIRCLE_TAG:-latest}-instantseal
+# Invoke jobs via workflows
+# See: https://circleci.com/docs/2.0/configuration-reference/#workflows
+workflows:
+  say-hello-workflow:
+    jobs:
+      - say-hello
